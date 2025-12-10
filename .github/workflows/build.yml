@@ -1,0 +1,33 @@
+name: Build and Test - Caoilfhionn
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Install required packages
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip ninja-build libglib2.0-dev libpixman-1-dev meson gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user
+
+      # Step 3: Verify installation
+      - name: Verify installations
+        run: |
+          nasm -v
+          gcc --version
+          qemu-riscv64 --version || true
+
+      # Step 4: Run make
+      - name: Build project
+        run: make
