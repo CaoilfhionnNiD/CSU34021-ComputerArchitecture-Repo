@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       # Step 1: Checkout the repository
@@ -19,11 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-          sudo apt update
           sudo apt install -y gcc-multilib qemu-user-static nasm binutils-riscv64-linux-gnu gcc-riscv64-linux-gnu
-
 
       # Step 3: Verify installation
       - name: Verify installations
