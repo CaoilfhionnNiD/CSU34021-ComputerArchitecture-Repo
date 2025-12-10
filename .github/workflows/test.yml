@@ -1,4 +1,4 @@
-name: Build and Test
+name: Build and Test - Caoilfhionn
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y gcc-multilib qemu-user-static nasm binutils-riscv64-linux-gnu gcc-riscv64-linux-gnu
+          sudo apt install -y python3-pip ninja-build libglib2.0-dev libpixman-1-dev meson gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user
 
       # Step 3: Verify installation
       - name: Verify installations
@@ -31,4 +31,3 @@ jobs:
       # Step 4: Run make
       - name: Build project
         run: make
-
