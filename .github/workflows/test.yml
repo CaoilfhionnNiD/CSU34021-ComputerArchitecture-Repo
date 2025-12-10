@@ -19,7 +19,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y python3-pip ninja-build libglib2.0-dev libpixman-1-dev meson gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user nasm
+          sudo apt install -y build-essential python3-pip ninja-build libglib2.0-dev libpixman-1-dev meson gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user nasm
 
       - name: Install Python packages
         run: pip install tomli
