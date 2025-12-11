@@ -37,7 +37,7 @@ jobs:
           nasm -v
           qemu-riscv64 --version || true
           riscv64-unknown-elf-gcc --version || true
-          riscv64-linux-gnu --version || true
+          riscv64-linux-gnu-gcc --version || true
 
       # Step 4: Build project
       - name: Build project
