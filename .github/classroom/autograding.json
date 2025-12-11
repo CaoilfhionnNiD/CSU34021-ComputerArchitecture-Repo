@@ -1,0 +1,15 @@
+{
+  "tests": [
+    {
+      "name": "Server/Client Test",
+      "setup": "",
+      "run": "bash .github/classroom/run_test.sh",
+      "input": "",
+      "output": "",
+      "comparison": "exact",
+      "timeout": 20,
+      "points": 10
+    }
+  ]
+}
+
