@@ -26,7 +26,7 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt update
           sudo apt install -y gcc-multilib libc6:i386 libc6-dev-i386
-          sudo apt install -y gcc-riscv64-unknown-elf qemu-user
+          sudo apt install -y gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user
           pip install tomli
 
       # Step 3: Verify installations
@@ -37,6 +37,7 @@ jobs:
           nasm -v
           qemu-riscv64 --version || true
           riscv64-unknown-elf-gcc --version || true
+          riscv64-linux-gnu --version || true
 
       # Step 4: Build project
       - name: Build project
