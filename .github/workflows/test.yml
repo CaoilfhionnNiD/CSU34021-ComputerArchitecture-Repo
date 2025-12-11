@@ -42,3 +42,30 @@ jobs:
       # Step 4: Build project
       - name: Build project
         run: make
+
+      - name: Run server/client IPC test
+        run: |
+          echo "Creating named pipes..."
+          mkfifo server.pipe
+          mkfifo anthony.pipe
+
+          echo "Starting server..."
+          ./server &
+          SERVER_PID=$!
+
+          sleep 1 
+
+          echo "Running client via QEMU..."
+          qemu-riscv64 ./client 
+
+          echo "Waiting for server to finish..."
+          wait $SERVER_PID
+
+          echo "=== SERVER OUTPUT ==="
+          cat server.out
+          echo "====================="
+
+          echo "=== CLIENT OUTPUT ==="
+          cat client.out
+          echo "====================="
+
