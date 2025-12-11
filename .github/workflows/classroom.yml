@@ -60,12 +60,3 @@ jobs:
 
           echo "Waiting for server to finish..."
           wait $SERVER_PID
-
-          echo "=== SERVER OUTPUT ==="
-          cat server.out
-          echo "====================="
-
-          echo "=== CLIENT OUTPUT ==="
-          cat client.out
-          echo "====================="
-
