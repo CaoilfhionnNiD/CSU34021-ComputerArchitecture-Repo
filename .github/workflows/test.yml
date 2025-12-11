@@ -1,4 +1,4 @@
-name: Build and Test - Caoilfhionn
+name: Build and Test - Classroom
 
 on:
   push:
@@ -8,29 +8,36 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
       # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install required packages
-      - name: Install dependencies for RISC V and ia32
+      # Step 2: Install common packages
+      - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install -y build-essential nasm gcc-multilib libc6-dev-i386 python3-pip ninja-build libglib2.0-dev libpixman-1-dev meson gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user 
 
-      - name: Install Python packages
-        run: pip install tomli
+          sudo apt install -y build-essential default-jdk nasm gdb vim \
+                              python3-pip ninja-build libglib2.0-dev libpixman-1-dev meson \
+                              curl git htop jq locales sudo tzdata wget
+          sudo dpkg --add-architecture i386
+          sudo apt update
+          sudo apt install -y gcc-multilib libc6:i386 libc6-dev-i386
+          sudo apt install -y gcc-riscv64-unknown-elf qemu-user
+          pip install tomli
 
-      # Step 3: Verify installation
-      - name: Verify installations
+      # Step 3: Verify installations
+      - name: Verify toolchain
         run: |
-          nasm -v
           gcc --version
+          gcc -m32 --version
+          nasm -v
           qemu-riscv64 --version || true
+          riscv64-unknown-elf-gcc --version || true
 
-      # Step 4: Run make
+      # Step 4: Build project
       - name: Build project
         run: make
