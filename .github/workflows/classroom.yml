@@ -48,6 +48,7 @@ jobs:
           echo "Creating named pipes..."
           mkfifo server.pipe
           mkfifo anthony.pipe
+          mkfifo bob.pipe
 
       # echo "Starting server..."
       # ./server &
