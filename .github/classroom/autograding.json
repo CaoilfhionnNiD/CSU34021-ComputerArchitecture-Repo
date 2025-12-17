@@ -1,7 +1,7 @@
 {
   "tests": [
     {
-      "name": "Server/Client Test",
+      "name": "Create User Test",
       "setup": "",
       "run": "bash .github/classroom/run_test.sh",
       "input": "",
