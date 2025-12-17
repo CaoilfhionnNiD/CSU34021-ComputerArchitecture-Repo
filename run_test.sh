@@ -1,44 +1,53 @@
-# #!/bin/bash
-# set -e
+#!/bin/bash
+set -e
 
-# echo "[INFO] Checking required student files..."
-# REQUIRED=("client_driver.c" "server_driver.c" "Makefile")
+TOTAL_POINTS=0
+MAX_POINTS=10
 
-# for f in "${REQUIRED[@]}"; do
-#     if [ ! -f "$f" ]; then
-#         echo "Missing required file: $f"
-#         exit 1
-#     fi
-# done
+./server &
+SERVER_PID=$!
+sleep 1  
 
-# echo "[INFO] Building with Makefile..."
-# make
+run_test() {
+    TEST_NAME=$1
+    CLIENT_CMD=$2 
+    EXPECTED_OUTPUT=$3
+    POINTS=$4
+    FOLDER=$5
 
-# echo "[INFO] Creating FIFOs..."
-# rm -f server.pipe anthony.pipe
-# mkfifo server.pipe
-# mkfifo anthony.pipe
+    echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-# echo "[INFO] Starting server..."
-# qemu-i386 -L /usr/i386-linux-gnu ./server > server_output.txt 2>&1 &
-# SERVER_PID=$!
-# sleep 1
+    # Run client 
+    if ! eval "$CLIENT_CMD" >client.out 2>&1; then
+        echo "Client crashed"
+        kill $SERVER_PID
+        return 0
+    fi
 
-# echo "[INFO] Running client..."
-# qemu-riscv64 ./client > client_output.txt 2>&1
+    # Compare output
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
+        echo "Test passed! +$POINTS points"
+        TOTAL_POINTS=$((TOTAL_POINTS + $POINTS))
+    else
+        echo "Test failed!"
+    fi
 
-# sleep 1
-# kill $SERVER_PID || true
+    if diff -u "$EXPECTED_OUTPUT" client.out >; then
+        if [ -d "$FOLDER" ] && [ "$(find "$FOLDER" -maxdepth 1 -type f -name "*.txt" | wc -l)" -eq 2 ]; then
+            echo "Test passed! +$POINTS points"
+            TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
+        else
+            echo "Test failed! Folder missing or does not contain exactly 2 .txt files"
+        fi
+    else
+        echo "Test failed! Client output mismatch"
+    fi
+}
 
-# echo "[INFO] Checking communication..."
-# if grep -q "Hello from RISC-V" server_output.txt && grep -q "Hello" client_output.txt ; then
-#     echo "OK"
-# else
-#     echo "FAIL"
-#     echo "--- SERVER OUTPUT ---"
-#     cat server_output.txt
-#     echo "--- CLIENT OUTPUT ---"
-#     cat client_output.txt
-#     exit 1
-# fi
+run_test "Create User" "qemu-riscv64 ./client create anthony" "expected_client_output.txt" 5 anthony
+run_test "Create User" "qemu-riscv64 ./client create bob" "expected_client_output.txt" 5 bob
 
+kill $SERVER_PID
+
+echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
+exit 0

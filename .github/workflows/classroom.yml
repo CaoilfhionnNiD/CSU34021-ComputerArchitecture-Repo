@@ -50,6 +50,9 @@ jobs:
           mkfifo anthony.pipe
           mkfifo bob.pipe
 
+      - name: Run autograder
+        run: bash run_tests.sh
+
       # echo "Starting server..."
       # ./server &
       # SERVER_PID=$!
