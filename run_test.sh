@@ -43,12 +43,16 @@ run_create_user_tests() {
         echo "Test failed!"
     fi
 
+    echo "Current working directory: $(pwd)"
+    echo "Contents of current directory:"
+    ls -l
+
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -d "$FOLDER" ]] && [[ -f "$FOLDER/friends.txt" ]] && [[ -f "$FOLDER/wall.txt" ]]; then
             echo "Test passed! .txt files exist + $((POINTS - 2)) points"
             TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
         else
-            echo "Test failed! Folder missing or does not contain exactly 2 .txt files"
+            echo "Test failed! Folder missing or does not contain the exactly two .txt files"
         fi
     else
         echo "Test failed! Client output mismatch"
