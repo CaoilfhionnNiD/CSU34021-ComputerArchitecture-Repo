@@ -13,29 +13,40 @@ run_create_user_tests() {
     CLIENT_CMD=$2 
     EXPECTED_OUTPUT=$3
     POINTS=$4
-    FOLDER=$5
+    FOLDER=${6:-""}
+    TIMEOUT=5
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     # Run client 
-    if ! eval "$CLIENT_CMD" >client.out 2>&1; then
-        echo "Client crashed"
+    # if ! eval "$CLIENT_CMD" >client.out 2>&1; then
+    #     echo "Client crashed"
+    #     kill $SERVER_PID
+    #     return 0
+    # fi
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Client crashed"
+        fi
         kill $SERVER_PID
         return 0
     fi
 
     # Compare output
     if diff -u "$EXPECTED_OUTPUT" client.out; then
-        echo "Test passed! +$POINTS-3 points"
-        TOTAL_POINTS=$((TOTAL_POINTS + $POINTS-3))
+        echo "Test passed! Output as expected +$((POINTS - 3)) points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
     else
         echo "Test failed!"
     fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [ -d "$FOLDER" ] && [ "$(find "$FOLDER" -maxdepth 1 -type f -name "*.txt" | wc -l)" -eq 2 ]; then
-            echo "Test passed! +$POINTS-2 points"
-            TOTAL_POINTS=$((TOTAL_POINTS + $POINTS-2))
+            echo "Test passed! .txt files exist + $((POINTS - 2)) points"
+            TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
         else
             echo "Test failed! Folder missing or does not contain exactly 2 .txt files"
         fi
@@ -55,27 +66,33 @@ run_add_friend_test() {
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     # Run client 
-    if ! eval "$CLIENT_CMD" >client.out 2>&1; then
-        echo "Client crashed"
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Client crashed"
+        fi
         kill $SERVER_PID
         return 0
     fi
 
     # Compare output
     if diff -u "$EXPECTED_OUTPUT" client.out; then
-        echo "Test passed! +$POINTS-3 points"
-        TOTAL_POINTS=$((TOTAL_POINTS + $POINTS-3))
+        echo "Test passed! Output as expected +$((POINTS - 3)) points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
     else
         echo "Test failed!"
     fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
-        if diff -u "$EXPECTED_FILE" $FOLDER/friends.txt; then
-            echo "Test passed! +$POINTS points"
-            TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
-        else
-            echo "Test failed! Friend missing in .txt file"
-        fi
+        if if [ -d "$FOLDER" ]; then
+            if diff -u "$EXPECTED_FILE" $FOLDER/friends.txt; then
+                echo "Test passed! friends.txt as expected +$((POINTS - 2)) points"
+                TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
+            else
+                echo "Test failed! Friend missing in .txt file"
+            fi
     else
         echo "Test failed! Client output mismatch"
     fi
@@ -88,7 +105,7 @@ run_create_user_tests "Create User" "qemu-riscv64 ./client create" "expected_out
 
 
 run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bob" "expected_output_ok.txt" "expected_friend_file.txt" 5 anthony
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
 run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
 
 
