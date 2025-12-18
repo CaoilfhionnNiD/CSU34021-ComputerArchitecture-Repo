@@ -32,7 +32,7 @@ run_test() {
         echo "Test failed!"
     fi
 
-    if diff -u "$EXPECTED_OUTPUT" client.out >; then
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [ -d "$FOLDER" ] && [ "$(find "$FOLDER" -maxdepth 1 -type f -name "*.txt" | wc -l)" -eq 2 ]; then
             echo "Test passed! +$POINTS points"
             TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
