@@ -51,7 +51,7 @@ jobs:
           mkfifo bob.pipe
 
       - name: Run autograder
-        run: bash run_tests.sh
+        run: bash run_test.sh
 
       # echo "Starting server..."
       # ./server &
