@@ -95,6 +95,7 @@ run_add_friend_test() {
             fi
         else
             TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
+        fi
     else
         echo "Test failed! Client output mismatch"
     fi
