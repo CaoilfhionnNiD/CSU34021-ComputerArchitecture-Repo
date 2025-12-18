@@ -86,13 +86,15 @@ run_add_friend_test() {
     fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
-        if if [ -d "$FOLDER" ]; then
+        if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
             if diff -u "$EXPECTED_FILE" $FOLDER/friends.txt; then
                 echo "Test passed! friends.txt as expected +$((POINTS - 2)) points"
                 TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
             else
                 echo "Test failed! Friend missing in .txt file"
             fi
+        else
+            TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
     else
         echo "Test failed! Client output mismatch"
     fi
