@@ -13,7 +13,7 @@ run_create_user_tests() {
     CLIENT_CMD=$2 
     EXPECTED_OUTPUT=$3
     POINTS=$4
-    FOLDER=${6:-""}
+    FOLDER=${5:-""}
     TIMEOUT=5
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
@@ -43,10 +43,6 @@ run_create_user_tests() {
         echo "Test failed!"
     fi
 
-    echo "Current working directory: $(pwd)"
-    echo "Contents of current directory:"
-    ls -l
-
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -d "$FOLDER" ]] && [[ -f "$FOLDER/friends.txt" ]] && [[ -f "$FOLDER/wall.txt" ]]; then
             echo "Test passed! .txt files exist + $((POINTS - 2)) points"
@@ -65,7 +61,7 @@ run_add_friend_test() {
     EXPECTED_OUTPUT=$3
     EXPECTED_FILE=$4
     POINTS=$5
-    FOLDER=$6
+    FOLDER=${6:-""}
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
