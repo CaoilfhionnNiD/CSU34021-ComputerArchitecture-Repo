@@ -67,7 +67,8 @@ run_add_friend_test() {
     EXPECTED_FILE=$4
     POINTS=$5
     FOLDER=${6:-""}
-
+    TIMEOUT=5
+    
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
@@ -87,6 +88,7 @@ run_add_friend_test() {
         kill $SERVER_PID
         return 0
     fi
+    
 
     # Compare output
     if diff -u "$EXPECTED_OUTPUT" client.out; then
