@@ -85,7 +85,8 @@ run_add_friend_test() {
     fi
 
     # Run client 
-    if ! timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1; then
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+    # if ! timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1; then
         STATUS=$?
         echo "Client exit status: $STATUS"
         echo "Client output so far:"
