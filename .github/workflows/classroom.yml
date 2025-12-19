@@ -49,6 +49,8 @@ jobs:
           mkfifo server.pipe
           mkfifo anthony.pipe
           mkfifo bob.pipe
+          mkfifo person1.pipe
+          mkfifo person2.pipe
 
       - name: Run autograder
         run: bash run_test.sh

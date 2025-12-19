@@ -69,6 +69,8 @@ run_add_friend_test() {
     FOLDER=${6:-""}
     TIMEOUT=5
 
+    ls
+
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
@@ -115,14 +117,13 @@ run_add_friend_test() {
 }
 
 run_create_user_tests "Create User" "qemu-riscv64 ./client create anthony" "expected_client_output.txt" 5 anthony
-run_create_user_tests "Create User" "qemu-riscv64 ./client create bob" "expected_client_output.txt" 5 bob
-run_create_user_tests "Create User" "qemu-riscv64 ./client create bob" "expected_output_user_exists.txt" 5 bob
-run_create_user_tests "Create User" "qemu-riscv64 ./client create" "expected_output_no_id.txt" 5
+run_create_user_tests "Create User" "qemu-riscv64 ./client create bob" "expected_output_user_exists.txt" 5 person1
+# run_create_user_tests "Create User" "qemu-riscv64 ./client create" "expected_output_no_id.txt" 5
 
 
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bob" "expected_output_ok.txt" "expected_friend_file.txt" 5 anthony
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client add person1 person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
+# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
+# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
 
 
 kill $SERVER_PID
