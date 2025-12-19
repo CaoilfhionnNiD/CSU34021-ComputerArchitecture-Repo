@@ -29,7 +29,7 @@ run_create_user_tests() {
         if [[ $STATUS -eq 124 ]]; then
             echo "Test failed: timed out after ${TIMEOUT}s"
         else
-            echo "Client crashed"
+            echo "Test failed: client crashed"
         fi
         kill $SERVER_PID
         return 0
@@ -45,7 +45,7 @@ run_create_user_tests() {
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -d "$FOLDER" ]] && [[ -f "$FOLDER/friends.txt" ]] && [[ -f "$FOLDER/wall.txt" ]]; then
-            echo "Test passed! .txt files exist + $((POINTS - 2)) points"
+            echo "Test passed! .txt files exist +$((POINTS - 2)) points"
             TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
         else
             echo "Test failed! Folder missing or does not contain the exactly two .txt files"
@@ -107,9 +107,9 @@ run_create_user_tests "Create User" "qemu-riscv64 ./client create bob" "expected
 run_create_user_tests "Create User" "qemu-riscv64 ./client create" "expected_output_no_id.txt" 5
 
 
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bob" "expected_output_ok.txt" "expected_friend_file.txt" 5 anthony
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bob" "expected_output_ok.txt" "expected_friend_file.txt" 5 anthony
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
 
 
 kill $SERVER_PID
