@@ -88,8 +88,10 @@ run_add_friend_test() {
     if ! timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1; then
         STATUS=$?
         echo "Client exit status: $STATUS"
+        echo "Client output so far:"
+        cat client.out
         if [[ $STATUS -eq 124 ]]; then
-             echo "Client output so far:"
+            echo "Client output so far:"
             cat client.out
             echo "Test failed: timed out after ${TIMEOUT}s"
         else
