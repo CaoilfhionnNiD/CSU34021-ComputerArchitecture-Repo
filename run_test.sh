@@ -29,13 +29,30 @@ run_create_user_tests() {
     #     kill $SERVER_PID
     #     return 0
     # fi
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-        STATUS=$?
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
+    # if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+    #     STATUS=$?
+    #     if [[ $STATUS -eq 124 ]]; then
+    #         echo "Test failed: timed out after ${TIMEOUT}s"
+    #     else
+    #         echo "Test failed: client crashed"
+    #     fi
+    #     kill $SERVER_PID
+    #     return 0
+    # fi
+
+    timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
+    STATUS=$?
+
+    echo "Client exit status: $STATUS"
+    echo "Client output so far:"
+    cat client.out
+
+    if [[ $STATUS -eq 124 ]]; then
+        echo "Test failed: timed out after ${TIMEOUT}s"
+        kill $SERVER_PID
+        return 0
+    elif [[ $STATUS -ne 0 ]]; then
+        echo "Test failed: client crashed"
         kill $SERVER_PID
         return 0
     fi
