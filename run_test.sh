@@ -72,16 +72,15 @@ run_add_friend_test() {
     ls
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
-    echo "Command: $CLIENT_CMD"
-    echo "Current directory: $(pwd)"
-    echo "Files in directory:"
-    ls -l
 
     if ! pgrep -x "server" > /dev/null; then
         echo "Server not running. Starting server..."
         ./server &
         SERVER_PID=$!
-        sleep 1
+        sleep 1  
+    else
+        SERVER_PID=$(pgrep -x "server")
+        echo "Server already running with PID $SERVER_PID"
     fi
 
     timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
