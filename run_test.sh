@@ -22,7 +22,7 @@ run_create_user_tests() {
         ./server &
         SERVER_PID=$!
         sleep 1
-
+    fi
     # Run client 
     # if ! eval "$CLIENT_CMD" >client.out 2>&1; then
     #     echo "Client crashed"
@@ -71,10 +71,10 @@ run_add_friend_test() {
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
-    ./server &
-    SERVER_PID=$!
-    sleep 1
-
+        ./server &
+        SERVER_PID=$!
+        sleep 1
+    fi
 
     # Run client 
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
