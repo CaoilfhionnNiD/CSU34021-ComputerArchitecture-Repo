@@ -68,7 +68,7 @@ run_add_friend_test() {
     POINTS=$5
     FOLDER=${6:-""}
     TIMEOUT=5
-    
+
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
@@ -78,7 +78,7 @@ run_add_friend_test() {
     fi
 
     # Run client 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+    if ! timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1; then
         STATUS=$?
         if [[ $STATUS -eq 124 ]]; then
             echo "Test failed: timed out after ${TIMEOUT}s"
