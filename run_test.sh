@@ -29,30 +29,13 @@ run_create_user_tests() {
     #     kill $SERVER_PID
     #     return 0
     # fi
-    # if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-    #     STATUS=$?
-    #     if [[ $STATUS -eq 124 ]]; then
-    #         echo "Test failed: timed out after ${TIMEOUT}s"
-    #     else
-    #         echo "Test failed: client crashed"
-    #     fi
-    #     kill $SERVER_PID
-    #     return 0
-    # fi
-
-    timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
-    STATUS=$?
-
-    echo "Client exit status: $STATUS"
-    echo "Client output so far:"
-    cat client.out
-
-    if [[ $STATUS -eq 124 ]]; then
-        echo "Test failed: timed out after ${TIMEOUT}s"
-        kill $SERVER_PID
-        return 0
-    elif [[ $STATUS -ne 0 ]]; then
-        echo "Test failed: client crashed"
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Test failed: client crashed"
+        fi
         kill $SERVER_PID
         return 0
     fi
@@ -101,25 +84,23 @@ run_add_friend_test() {
         sleep 1
     fi
 
-    # Run client 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-    # if ! timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1; then
-        STATUS=$?
-        echo "Client exit status: $STATUS"
-        echo "Client output so far:"
-        cat client.out
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Client output so far:"
-            cat client.out
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
+    timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
+    STATUS=$?
+
+    echo "Client exit status: $STATUS"
+
+    if [[ $STATUS -eq 124 ]]; then
+        echo "Test failed: timed out after ${TIMEOUT}s"
+        kill $SERVER_PID
+        return 0
+    elif [[ $STATUS -ne 0 ]]; then
+        echo here
+        echo "Test failed: client crashed"
         kill $SERVER_PID
         return 0
     fi
     
-
+    echo reached
     # Compare output
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
