@@ -65,13 +65,15 @@ run_add_friend_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
+    ls -l
+
     # Run client 
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
         STATUS=$?
         if [[ $STATUS -eq 124 ]]; then
             echo "Test failed: timed out after ${TIMEOUT}s"
         else
-            echo "Client crashed"
+            echo "Test failed: client crashed"
         fi
         kill $SERVER_PID
         return 0
