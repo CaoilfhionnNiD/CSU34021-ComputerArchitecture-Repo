@@ -72,8 +72,13 @@ run_add_friend_test() {
     ls
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
+    echo "Command: $CLIENT_CMD"
+    echo "Current directory: $(pwd)"
+    echo "Files in directory:"
+    ls -l
 
     if ! pgrep -x "server" > /dev/null; then
+        echo "Server not running. Starting server..."
         ./server &
         SERVER_PID=$!
         sleep 1
@@ -82,7 +87,10 @@ run_add_friend_test() {
     # Run client 
     if ! timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1; then
         STATUS=$?
+        echo "Client exit status: $STATUS"
         if [[ $STATUS -eq 124 ]]; then
+             echo "Client output so far:"
+            cat client.out
             echo "Test failed: timed out after ${TIMEOUT}s"
         else
             echo "Test failed: client crashed"
@@ -117,7 +125,7 @@ run_add_friend_test() {
 }
 
 run_create_user_tests "Create User" "qemu-riscv64 ./client create anthony" "expected_client_output.txt" 5 anthony
-run_create_user_tests "Create User" "qemu-riscv64 ./client create bob" "expected_output_user_exists.txt" 5 person1
+run_create_user_tests "Create User" "qemu-riscv64 ./client create person1" "expected_output_user_exists.txt" 5 person1
 # run_create_user_tests "Create User" "qemu-riscv64 ./client create" "expected_output_no_id.txt" 5
 
 
