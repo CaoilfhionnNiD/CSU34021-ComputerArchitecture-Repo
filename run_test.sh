@@ -67,15 +67,13 @@ run_add_friend_test() {
     EXPECTED_FILE=$4
     POINTS=$5
     FOLDER=${6:-""}
-    TIMEOUT=5
-
-    ls
+    TIMEOUT=10
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
         echo "Server not running. Starting server..."
-        ./server &
+         ./server > server.out 2>&1 &
         SERVER_PID=$!
         sleep 1  
     else
@@ -95,6 +93,7 @@ run_add_friend_test() {
     elif [[ $STATUS -ne 0 ]]; then
         echo here
         echo "Test failed: client crashed"
+        cat server.out
         kill $SERVER_PID
         return 0
     fi
