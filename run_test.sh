@@ -66,7 +66,8 @@ run_client_without_server_test() {
     TEST_NAME=$1
     CLIENT_CMD=$2
     EXPECTED_OUTPUT=$3
-    POINTS=$4
+    EXPECTED_OUTPUT_2=$4
+    POINTS=$5
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
@@ -75,18 +76,21 @@ run_client_without_server_test() {
         return 0
     fi
 
-    rm -f server.pipe
-    mkfifo server.pipe
+    rm -f server.pipe anthony.pipe
+    mkfifo server.pipe anthony.pipe
 
     cat server.pipe > server_pipe.out &
     PIPE_PID=$!
 
+    cat anthony.pipe > anthony_pipe.out &
+    ANTHONY_PIPE_PID=$!
+
     bash -c "$CLIENT_CMD" > client.out 2>&1 &
     CLIENT_PID=$!
-    echo "Sleeping"
 
     sleep 2
 
+    echo "ok: user created!" > anthony.pipe &
 
     if kill -0 "$CLIENT_PID" 2>/dev/null; then
     kill "$CLIENT_PID" 2>/dev/null || true
@@ -98,8 +102,8 @@ run_client_without_server_test() {
 
     kill "$PIPE_PID" 2>/dev/null || true
     wait "$PIPE_PID" 2>/dev/null || true
-
-    echo "Checking output"
+    kill "$ANTHONY_PIPE_PID" 2>/dev/null || true
+    wait "$ANTHONY_PIPE_PID" 2>/dev/null || true
 
     if diff -u "$EXPECTED_OUTPUT" server_pipe.out; then
         echo "Test passed! Output as expected +$POINTS points"
@@ -108,7 +112,14 @@ run_client_without_server_test() {
         echo "Test failed! Output mismatch"
     fi
 
-    rm -f server.pipe
+    if diff -u "$EXPECTED_OUTPUT_2" anthony_pipe.out; then
+        echo "Test passed! Output as expected +$POINTS points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
+    else
+        echo "Test failed! Output mismatch"
+    fi
+
+    rm -f server.pipe anthony.pipe
 }
 
 
@@ -131,7 +142,6 @@ run_server_without_client_test() {
     cat billy.pipe > billy_pipe.out &
     BILLY_READER_PID=$!
 
-    # Write command to server.pipe
     echo "create billy" > server.pipe &
 
     sleep 2
@@ -280,7 +290,7 @@ run_post_wall_test() {
 #     fi
 # }
 
-run_client_without_server_test "Create User without server" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" 5 
+run_client_without_server_test "Create User without server" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" "expected_client_output.txt" 5 
 run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
 
 ./server &
