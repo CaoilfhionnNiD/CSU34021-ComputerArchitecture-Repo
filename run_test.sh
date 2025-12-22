@@ -27,6 +27,10 @@ run_create_user_tests() {
     #     kill $SERVER_PID
     #     return 0
     # fi
+
+    rm -f server.pipe
+    mkfifo server.pipe
+
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
         STATUS=$?
         if [[ $STATUS -eq 124 ]]; then
@@ -106,6 +110,48 @@ run_client_without_server_test() {
 
     rm -f server.pipe
 }
+
+
+run_server_without_client_test() {
+    TEST_NAME=$1
+    EXPECTED_OUTPUT=$2
+    POINTS=$3
+
+    echo "Running test: $TEST_NAME (worth $POINTS points)"
+
+    rm -f server.pipe billy.pipe server_pipe.out billy_pipe.out
+
+    mkfifo server.pipe
+    mkfifo billy.pipe
+
+    ./server &
+    SERVER_PID=$!
+    sleep 1
+
+    cat billy.pipe > billy_pipe.out &
+    BILLY_READER_PID=$!
+
+    # Write command to server.pipe
+    echo "create billy" > server.pipe &
+
+    sleep 2
+
+    kill "$BILLY_READER_PID" 2>/dev/null || true
+    wait "$BILLY_READER_PID" 2>/dev/null || true
+
+    kill "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" 2>/dev/null || true
+
+    if diff -u "$EXPECTED_OUTPUT" billy_pipe.out; then
+        echo "Test passed! Output as expected +$POINTS points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
+    else
+        echo "Test failed! Output mismatch"
+    fi
+
+    rm -f server.pipe billy.pipe
+}
+
 
 
 run_post_wall_test() {
@@ -234,7 +280,8 @@ run_post_wall_test() {
 #     fi
 # }
 
-run_client_without_server_test "Create User" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" 5 
+run_client_without_server_test "Create User without server" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" 5 
+run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
 
 ./server &
 SERVER_PID=$!
