@@ -5,7 +5,6 @@ TOTAL_POINTS=0
 MAX_POINTS=35
 
 
-
 run_create_user_tests() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
@@ -13,6 +12,10 @@ run_create_user_tests() {
     POINTS=$4
     FOLDER=${5:-""}
     TIMEOUT=5
+
+    rm -f server.pipe anthony.pipe
+
+    mkfifo server.pipe anthony.pipe
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
@@ -106,14 +109,14 @@ run_client_without_server_test() {
     wait "$ANTHONY_PIPE_PID" 2>/dev/null || true
 
     if diff -u "$EXPECTED_OUTPUT" server_pipe.out; then
-        echo "Test passed! Output as expected +$POINTS points"
+        echo "Test passed! Output as expected to server pipe +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
         echo "Test failed! Output mismatch"
     fi
 
     if diff -u "$EXPECTED_OUTPUT_2" anthony_pipe.out; then
-        echo "Test passed! Output as expected +$POINTS points"
+        echo "Test passed! Output as expected from client pipe +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
         echo "Test failed! Output mismatch"
@@ -135,14 +138,15 @@ run_server_without_client_test() {
     mkfifo server.pipe
     mkfifo billy.pipe
 
+    cat billy.pipe > billy_pipe.out &
+    BILLY_READER_PID=$!
+
+
     ./server &
     SERVER_PID=$!
     sleep 1
 
-    cat billy.pipe > billy_pipe.out &
-    BILLY_READER_PID=$!
-
-    echo "create billy" > server.pipe &
+    echo "create billy" > server.pipe 
 
     sleep 2
 
