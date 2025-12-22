@@ -56,7 +56,7 @@ run_create_user_tests() {
     fi
 }
 
-run_add_friend_test() {
+run_post_wall_test() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
     EXPECTED_OUTPUT=$3
@@ -68,23 +68,45 @@ run_add_friend_test() {
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
-        echo "Server not running. Starting server..."
-         ./server > server.out 2>&1 &
+        ./server &
         SERVER_PID=$!
-        sleep 1  
-    else
-        SERVER_PID=$(pgrep -x "server")
-        echo "Server already running with PID $SERVER_PID"
+        sleep 1
     fi
 
-    echo $CLIENT_CMD
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Test failed: client crashed"
+        fi
+        kill $SERVER_PID
+        return 0
+    fi
 
-    timeout "${TIMEOUT}s" $CLIENT_CMD
-    STATUS=$?
+    # Compare output
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
+        echo "Test passed! Output as expected +$((POINTS - 3)) points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
+    else
+        echo "Test failed!"
+    fi
 
-    echo "Client exit status: $STATUS"
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
+        if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
+            if diff -u "$EXPECTED_FILE" $FOLDER/wall.txt; then
+                echo "Test passed! wall.txt as expected +$((POINTS - 2)) points"
+                TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
+            else
+                echo "Test failed! Post missing in wall.txt file"
+            fi
+        else
+            TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
+        fi
+    else
+        echo "Test failed! Client output mismatch"
+    fi
 
-    cat client.out
 }
 
 # run_add_friend_test() {
@@ -163,11 +185,11 @@ kill $SERVER_PID
 ./server &
 SERVER_PID=$!
 sleep 1  
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client add person1 person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
+# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add person1 person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
 # run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
 # run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
 
-
+run_post_wall_test "Post Wall" "qemu-riscv64 ./client post person1 person2" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
 kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
