@@ -4,6 +4,8 @@ set -e
 TOTAL_POINTS=0
 MAX_POINTS=35
 
+
+
 run_create_user_tests() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
@@ -55,6 +57,54 @@ run_create_user_tests() {
         echo "Test failed! Client output mismatch"
     fi
 }
+
+run_client_without_server_test() {
+    TEST_NAME=$1
+    CLIENT_CMD=$2
+    EXPECTED_OUTPUT=$3
+    POINTS=$4
+
+    echo "Running test: $TEST_NAME (worth $POINTS points)"
+
+    if pgrep -x "server" > /dev/null; then
+        echo "Server is running when it should not be"
+        return 0
+    fi
+
+    # Clean up and recreate server.pipe
+    rm -f server.pipe
+    mkfifo server.pipe
+
+    cat server.pipe > server_pipe.out &
+    PIPE_PID=$!
+
+    bash -c "$CLIENT_CMD" > client.out 2>&1 &
+    CLIENT_PID=$!
+
+    sleep 2
+
+    if kill -0 "$CLIENT_PID" 2>/dev/null; then
+        kill "$CLIENT_PID" 2>/dev/null
+        wait "$CLIENT_PID" 2>/dev/null
+        echo "Client killed after 2 seconds"
+    else
+        echo "Test failed: client exited early"
+    fi
+
+    kill "$PIPE_PID" 2>/dev/null
+    wait "$PIPE_PID" 2>/dev/null
+
+
+    if diff -u "$EXPECTED_OUTPUT" server_pipe.out; then
+        echo "Test passed! Output as expected +$POINTS points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
+    else
+        echo "Test failed! Output mismatch"
+    fi
+
+    rm -f server.pipe
+}
+
 
 run_post_wall_test() {
     TEST_NAME=$1
@@ -182,6 +232,7 @@ run_post_wall_test() {
 #     fi
 # }
 
+run_client_without_server_test "Create User" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" 5 
 
 ./server &
 SERVER_PID=$!
@@ -199,7 +250,7 @@ sleep 1
 # run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
 # run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
 
-run_post_wall_test "Post Wall" "qemu-riscv64 ./client post person1 person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
+# run_post_wall_test "Post Wall" "qemu-riscv64 ./client post person1 person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
 kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
