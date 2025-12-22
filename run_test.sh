@@ -75,6 +75,7 @@ run_post_wall_test() {
 
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
         STATUS=$?
+        echo "Client exit status: $STATUS" 
         if [[ $STATUS -eq 124 ]]; then
             echo "Test failed: timed out after ${TIMEOUT}s"
         else
