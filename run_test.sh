@@ -77,7 +77,9 @@ run_add_friend_test() {
         echo "Server already running with PID $SERVER_PID"
     fi
 
-    timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
+    echo $CLIENT_CMD
+
+    timeout "${TIMEOUT}s" $CLIENT_CMD
     STATUS=$?
 
     echo "Client exit status: $STATUS"
