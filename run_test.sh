@@ -165,6 +165,7 @@ run_add_friend_test "Add Friend" "qemu-riscv64 ./client add person1 person2" "ex
 # run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
 # run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
 
+
 kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
