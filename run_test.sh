@@ -71,7 +71,6 @@ run_client_without_server_test() {
         return 0
     fi
 
-    # Clean up and recreate server.pipe
     rm -f server.pipe
     mkfifo server.pipe
 
@@ -80,20 +79,23 @@ run_client_without_server_test() {
 
     bash -c "$CLIENT_CMD" > client.out 2>&1 &
     CLIENT_PID=$!
+    echo "Sleeping"
 
     sleep 2
 
+
     if kill -0 "$CLIENT_PID" 2>/dev/null; then
-        kill "$CLIENT_PID" 2>/dev/null
-        wait "$CLIENT_PID" 2>/dev/null
-        echo "Client killed after 2 seconds"
+    kill "$CLIENT_PID" 2>/dev/null || true
+    wait "$CLIENT_PID" 2>/dev/null || true
+    echo "Client killed after 2 seconds"
     else
-        echo "Test failed: client exited early"
+        echo "Client exited before 2 seconds"
     fi
 
-    kill "$PIPE_PID" 2>/dev/null
-    wait "$PIPE_PID" 2>/dev/null
+    kill "$PIPE_PID" 2>/dev/null || true
+    wait "$PIPE_PID" 2>/dev/null || true
 
+    echo "Checking output"
 
     if diff -u "$EXPECTED_OUTPUT" server_pipe.out; then
         echo "Test passed! Output as expected +$POINTS points"
