@@ -73,16 +73,25 @@ run_post_wall_test() {
         sleep 1
     fi
 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-        STATUS=$?
-        echo "Client exit status: $STATUS" 
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
-        kill $SERVER_PID
+    timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1
+    STATUS=$?
+
+    # Always show the client output for debugging
+    echo "=== Client output ==="
+    cat client.out
+    echo "===================="
+
+    # Check exit status
+    if [[ $STATUS -eq 124 ]]; then
+        echo "Test failed: timed out after ${TIMEOUT}s"
+        [[ -n "$SERVER_PID" ]] && kill $SERVER_PID
         return 0
+    elif [[ $STATUS -ne 0 ]]; then
+        echo "Test failed: client crashed with status $STATUS"
+        [[ -n "$SERVER_PID" ]] && kill $SERVER_PID
+        return 0
+    else
+        echo "Client ran successfully (status 0)"
     fi
 
     # Compare output
