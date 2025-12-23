@@ -4,8 +4,6 @@ set -e
 TOTAL_POINTS=0
 MAX_POINTS=35
 
-mkfifo person1.pipe person2.pipe
-
 run_create_user_tests() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
