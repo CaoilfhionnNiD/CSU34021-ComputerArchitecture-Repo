@@ -4,6 +4,7 @@ set -e
 TOTAL_POINTS=0
 MAX_POINTS=35
 
+mkfifo person1.pipe person2.pipe
 
 run_create_user_tests() {
     TEST_NAME=$1
@@ -133,37 +134,36 @@ run_server_without_client_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    rm -f server.pipe billy.pipe server_pipe.out billy_pipe.out
+    rm -f server.pipe anthony.pipe server_pipe.out anthony_pipe.out
 
     mkfifo server.pipe
-    mkfifo billy.pipe
+    mkfifo bilanthonyly.pipe
 
-    cat billy.pipe > billy_pipe.out &
-    BILLY_READER_PID=$!
-
+    cat anthony.pipe > anthony_pipe.out &
+    ANTHONY_READER_PID=$!
 
     ./server &
     SERVER_PID=$!
     sleep 1
 
-    echo "create billy" > server.pipe 
+    echo "create anthony" > server.pipe 
 
     sleep 2
 
-    kill "$BILLY_READER_PID" 2>/dev/null || true
-    wait "$BILLY_READER_PID" 2>/dev/null || true
+    kill "$ANTHONY_READER_PID" 2>/dev/null || true
+    wait "$ANTHONY_READER_PID" 2>/dev/null || true
 
     kill "$SERVER_PID" 2>/dev/null || true
     wait "$SERVER_PID" 2>/dev/null || true
 
-    if diff -u "$EXPECTED_OUTPUT" billy_pipe.out; then
+    if diff -u "$EXPECTED_OUTPUT" anthony_pipe.out; then
         echo "Test passed! Output as expected +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
         echo "Test failed! Output mismatch"
     fi
 
-    rm -f server.pipe billy.pipe
+    rm -f server.pipe anthony.pipe
 }
 
 
@@ -231,68 +231,67 @@ run_post_wall_test() {
 
 }
 
-# run_add_friend_test() {
-#     TEST_NAME=$1
-#     CLIENT_CMD=$2 
-#     EXPECTED_OUTPUT=$3
-#     EXPECTED_FILE=$4
-#     POINTS=$5
-#     FOLDER=${6:-""}
-#     TIMEOUT=10
+run_add_friend_test() {
+    TEST_NAME=$1
+    CLIENT_CMD=$2 
+    EXPECTED_OUTPUT=$3
+    EXPECTED_FILE=$4
+    POINTS=$5
+    FOLDER=${6:-""}
+    TIMEOUT=10
 
-#     echo "Running test: $TEST_NAME (worth $POINTS points)"
+    echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-#     if ! pgrep -x "server" > /dev/null; then
-#         echo "Server not running. Starting server..."
-#          ./server > server.out 2>&1 &
-#         SERVER_PID=$!
-#         sleep 1  
-#     else
-#         SERVER_PID=$(pgrep -x "server")
-#         echo "Server already running with PID $SERVER_PID"
-#     fi
+    if ! pgrep -x "server" > /dev/null; then
+        echo "Server not running. Starting server..."
+         ./server > server.out 2>&1 &
+        SERVER_PID=$!
+        sleep 1  
+    else
+        SERVER_PID=$(pgrep -x "server")
+        echo "Server already running with PID $SERVER_PID"
+    fi
 
-#     timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
-#     STATUS=$?
+    timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
+    STATUS=$?
 
-#     echo "Client exit status: $STATUS"
+    echo "Client exit status: $STATUS"
 
-#     if [[ $STATUS -eq 124 ]]; then
-#         echo "Test failed: timed out after ${TIMEOUT}s"
-#         kill $SERVER_PID
-#         return 0
-#     elif [[ $STATUS -ne 0 ]]; then
-#         echo here
-#         echo "Test failed: client crashed"
-#         cat server.out
-#         kill $SERVER_PID
-#         return 0
-#     fi
+    if [[ $STATUS -eq 124 ]]; then
+        echo "Test failed: timed out after ${TIMEOUT}s"
+        kill $SERVER_PID
+        return 0
+    elif [[ $STATUS -ne 0 ]]; then
+        echo here
+        echo "Test failed: client crashed"
+        cat server.out
+        kill $SERVER_PID
+        return 0
+    fi
     
-#     echo reached
-#     # Compare output
-#     if diff -u "$EXPECTED_OUTPUT" client.out; then
-#         echo "Test passed! Output as expected +$((POINTS - 3)) points"
-#         TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-#     else
-#         echo "Test failed!"
-#     fi
+    echo reached
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
+        echo "Test passed! Output as expected +$((POINTS - 3)) points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
+    else
+        echo "Test failed!"
+    fi
 
-#     if diff -u "$EXPECTED_OUTPUT" client.out; then
-#         if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
-#             if diff -u "$EXPECTED_FILE" $FOLDER/friends.txt; then
-#                 echo "Test passed! friends.txt as expected +$((POINTS - 2)) points"
-#                 TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
-#             else
-#                 echo "Test failed! Friend missing in .txt file"
-#             fi
-#         else
-#             TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
-#         fi
-#     else
-#         echo "Test failed! Client output mismatch"
-#     fi
-# }
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
+        if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
+            if diff -u "$EXPECTED_FILE" $FOLDER/friends.txt; then
+                echo "Test passed! friends.txt as expected +$((POINTS - 2)) points"
+                TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
+            else
+                echo "Test failed! Friend missing in .txt file"
+            fi
+        else
+            TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 2))
+        fi
+    else
+        echo "Test failed! Client output mismatch"
+    fi
+}
 
 run_client_without_server_test "Create User without server" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" "expected_client_output.txt" 5 
 run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
@@ -301,19 +300,16 @@ run_server_without_client_test "Create User without client" "expected_client_out
 SERVER_PID=$!
 sleep 1  
 
-run_create_user_tests "Create User" "qemu-riscv64 ./client create anthony" "expected_client_output.txt" 5 anthony
-run_create_user_tests "Create User" "qemu-riscv64 ./client create person1" "expected_output_user_exists.txt" 5 person1
-# run_create_user_tests "Create User" "qemu-riscv64 ./client create" "expected_output_no_id.txt" 5
+run_create_user_tests "Create User" "qemu-riscv64 ./client anthony create" "expected_client_output.txt" 5 anthony
+run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expected_output_user_exists.txt" 5 person1
 kill $SERVER_PID
 
 ./server &
 SERVER_PID=$!
 sleep 1  
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add person1 person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add anthony bill" "expected_output_no_friend.txt" "expected_friend_file.txt" 5 anthony
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client add bill bob" "expected_output_no_id2.txt" "emptyfile.txt" 5
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
 
-# run_post_wall_test "Post Wall" "qemu-riscv64 ./client post person1 person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
+run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
 kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
