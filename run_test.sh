@@ -93,17 +93,17 @@ run_client_without_server_test() {
 
     sleep 1
 
-    if kill -0 "$CLIENT_PID" 2>/dev/null; then
-        kill "$CLIENT_PID" 2>/dev/null || true
-        wait "$CLIENT_PID" 2>/dev/null || true
-    else
-        echo "Client exited before 2 seconds"
-    fi
+    # if kill -0 "$CLIENT_PID" 2>/dev/null; then
+    #     kill "$CLIENT_PID" 2>/dev/null || true
+    #     wait "$CLIENT_PID" 2>/dev/null || true
+    # else
+    #     echo "Client exited before 2 seconds"
+    # fi
 
-    kill "$PIPE_PID" 2>/dev/null || true
-    wait "$PIPE_PID" 2>/dev/null || true
-    kill "$ANTHONY_PIPE_PID" 2>/dev/null || true
-    wait "$ANTHONY_PIPE_PID" 2>/dev/null || true
+    # kill "$PIPE_PID" 2>/dev/null || true
+    # wait "$PIPE_PID" 2>/dev/null || true
+    # kill "$ANTHONY_PIPE_PID" 2>/dev/null || true
+    # wait "$ANTHONY_PIPE_PID" 2>/dev/null || true
 
     if diff -u "$EXPECTED_OUTPUT" server_pipe.out; then
         echo "Test passed! Output as expected to server pipe +$POINTS points"
