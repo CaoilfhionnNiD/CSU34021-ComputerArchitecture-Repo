@@ -67,16 +67,8 @@ run_client_without_server_test() {
 
     cat server.pipe > server_pipe.out &
 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-        STATUS=$?
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
-        kill $SERVER_PID
-        return 0
-    fi
+    bash -c "$CLIENT_CMD" > client.out 2>&1 &
+    CLIENT_PID=$!
 
     sleep 2
 
