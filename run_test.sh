@@ -12,9 +12,9 @@ run_create_user_tests() {
     FOLDER=${5:-""}
     TIMEOUT=5
 
-    rm -f server.pipe anthony.pipe
+    # rm -f server.pipe anthony.pipe
 
-    mkfifo server.pipe anthony.pipe
+    # mkfifo server.pipe anthony.pipe
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
@@ -30,8 +30,8 @@ run_create_user_tests() {
     #     return 0
     # fi
 
-    rm -f server.pipe
-    mkfifo server.pipe
+    # rm -f server.pipe
+    # mkfifo server.pipe
 
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
         STATUS=$?
@@ -78,8 +78,8 @@ run_client_without_server_test() {
         return 0
     fi
 
-    rm -f server.pipe anthony.pipe
-    mkfifo server.pipe anthony.pipe
+    # rm -f server.pipe anthony.pipe
+    # mkfifo server.pipe anthony.pipe
 
     cat server.pipe > server_pipe.out &
     PIPE_PID=$!
@@ -121,7 +121,7 @@ run_client_without_server_test() {
         echo "Test failed! Output mismatch"
     fi
 
-    rm -f server.pipe anthony.pipe
+    # rm -f server.pipe anthony.pipe
 }
 
 
@@ -132,10 +132,10 @@ run_server_without_client_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    rm -f server.pipe anthony.pipe server_pipe.out anthony_pipe.out
+    # rm -f server.pipe anthony.pipe server_pipe.out anthony_pipe.out
 
-    mkfifo server.pipe
-    mkfifo bilanthonyly.pipe
+    # mkfifo server.pipe
+    # mkfifo bilanthonyly.pipe
 
     cat anthony.pipe > anthony_pipe.out &
     ANTHONY_READER_PID=$!
@@ -161,7 +161,7 @@ run_server_without_client_test() {
         echo "Test failed! Output mismatch"
     fi
 
-    rm -f server.pipe anthony.pipe
+    # rm -f server.pipe anthony.pipe
 }
 
 
