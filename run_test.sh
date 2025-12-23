@@ -249,7 +249,7 @@ run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expe
 # sleep 1  
 run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
 
-run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
+run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person2
 # kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
