@@ -186,7 +186,7 @@ run_add_friend_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    echo "person1\n" > person2/friends.txt
+    echo "person1" > person2/friends.txt
 
 
     if ! pgrep -x "server" > /dev/null; then
