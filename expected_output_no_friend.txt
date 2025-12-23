@@ -1,1 +1,0 @@
-nok: user '$friend' does not exist

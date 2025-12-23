@@ -241,9 +241,9 @@ mkfifo $name1.pipe
 mkfifo $name2.pipe
 mkfifo server.pipe
 
-echo -n "create $name1" > expected_server_pipe_output.txt
+echo -n "create $name1" > expected_output.txt
 
-run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 $name1
+run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_output.txt" "expected_client_output.txt" 5 $name1
 run_server_without_client_test "Create User without client" "expected_client_output.txt" 5 $name1
 
 rm -rf $name1
@@ -254,13 +254,13 @@ run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expec
 mkdir "$name2"
 touch "$name2/friends.txt" "$name2/wall.txt"
 
-echo "$name2" > expected_friend_file.txt
+echo "$name2" > expected_output.txt
 
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output_ok.txt" "expected_friend_file.txt" 5 $name1 $name2
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output_ok.txt" "expected_output.txt" 5 $name1 $name2
 
-echo "$name1: hey" > expected_wall_file.txt
+echo "$name1: hey" > expected_output.txt
 
-run_post_wall_test "Post Wall" "qemu-riscv64 ./client $name1 post $name2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 $name2
+run_post_wall_test "Post Wall" "qemu-riscv64 ./client $name1 post $name2 hey" "expected_output_ok.txt" "expected_output.txt" 5 $name2
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
 exit 0
