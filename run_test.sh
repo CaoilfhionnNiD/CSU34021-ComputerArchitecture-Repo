@@ -140,33 +140,22 @@ run_post_wall_test() {
         sleep 1
     fi
 
-    timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1
-    STATUS=$?
-
-    # Always show the client output for debugging
-    echo "=== Client output ==="
-    cat client.out
-    echo "===================="
-
-    # Check exit status
-    if [[ $STATUS -eq 124 ]]; then
-        echo "Test failed: timed out after ${TIMEOUT}s"
-        [[ -n "$SERVER_PID" ]] && kill $SERVER_PID
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Test failed: client crashed"
+        fi
+        kill $SERVER_PID
         return 0
-    elif [[ $STATUS -ne 0 ]]; then
-        echo "Test failed: client crashed with status $STATUS"
-        [[ -n "$SERVER_PID" ]] && kill $SERVER_PID
-        return 0
-    else
-        echo "Client ran successfully (status 0)"
     fi
 
-    # Compare output
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
     else
-        echo "Test failed!"
+        echo "Test failed! Output did not match"
     fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
@@ -257,7 +246,7 @@ run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expe
 # sleep 1  
 run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
 
-# run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
+run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
 # kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
