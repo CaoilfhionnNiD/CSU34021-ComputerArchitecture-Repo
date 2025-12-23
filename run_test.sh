@@ -91,9 +91,11 @@ run_client_without_server_test() {
 
     echo "ok: user created!" > anthony.pipe &
 
+    sleep 1
+
     if kill -0 "$CLIENT_PID" 2>/dev/null; then
-    kill "$CLIENT_PID" 2>/dev/null || true
-    wait "$CLIENT_PID" 2>/dev/null || true
+        kill "$CLIENT_PID" 2>/dev/null || true
+        wait "$CLIENT_PID" 2>/dev/null || true
     else
         echo "Client exited before 2 seconds"
     fi
@@ -138,7 +140,7 @@ run_server_without_client_test() {
     SERVER_PID=$!
     sleep 1
 
-    echo "create anthony" > server.pipe 
+    echo "anthony create" > server.pipe 
 
     sleep 2
 
