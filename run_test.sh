@@ -12,6 +12,8 @@ run_create_user_tests() {
     FOLDER=${5:-""}
     TIMEOUT=5
 
+    rm -rf anthony
+
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
