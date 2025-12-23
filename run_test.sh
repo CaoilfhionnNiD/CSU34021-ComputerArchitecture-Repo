@@ -78,9 +78,6 @@ run_client_without_server_test() {
         return 0
     fi
 
-    # rm -f server.pipe anthony.pipe
-    # mkfifo server.pipe anthony.pipe
-
     cat server.pipe > server_pipe.out &
     PIPE_PID=$!
 
@@ -97,7 +94,6 @@ run_client_without_server_test() {
     if kill -0 "$CLIENT_PID" 2>/dev/null; then
     kill "$CLIENT_PID" 2>/dev/null || true
     wait "$CLIENT_PID" 2>/dev/null || true
-    echo "Client killed after 2 seconds"
     else
         echo "Client exited before 2 seconds"
     fi
@@ -120,8 +116,6 @@ run_client_without_server_test() {
     else
         echo "Test failed! Output mismatch"
     fi
-
-    # rm -f server.pipe anthony.pipe
 }
 
 
@@ -292,7 +286,7 @@ run_add_friend_test() {
 }
 
 run_client_without_server_test "Create User without server" "qemu-riscv64 ./client anthony create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 
-# run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
+run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
 
 # ./server &
 # SERVER_PID=$!
