@@ -207,24 +207,17 @@ run_add_friend_test() {
         echo "Server already running with PID $SERVER_PID"
     fi
 
-    timeout "${TIMEOUT}s" $CLIENT_CMD > client.out 2>&1
-    STATUS=$?
-
-    echo "Client exit status: $STATUS"
-
-    if [[ $STATUS -eq 124 ]]; then
-        echo "Test failed: timed out after ${TIMEOUT}s"
-        kill $SERVER_PID
-        return 0
-    elif [[ $STATUS -ne 0 ]]; then
-        echo here
-        echo "Test failed: client crashed"
-        cat server.out
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Test failed: client crashed"
+        fi
         kill $SERVER_PID
         return 0
     fi
     
-    echo reached
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
@@ -262,7 +255,7 @@ run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expe
 # ./server &
 # SERVER_PID=$!
 # sleep 1  
-# run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
 
 # run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
 # kill $SERVER_PID
