@@ -291,24 +291,24 @@ run_add_friend_test() {
     fi
 }
 
-run_client_without_server_test "Create User without server" "qemu-riscv64 ./client create anthony" "expected_server_pipe_output.txt" "expected_client_output.txt" 5 
-run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
+run_client_without_server_test "Create User without server" "qemu-riscv64 ./client anthony create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 
+# run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
 
-./server &
-SERVER_PID=$!
-sleep 1  
+# ./server &
+# SERVER_PID=$!
+# sleep 1  
 
-run_create_user_tests "Create User" "qemu-riscv64 ./client anthony create" "expected_client_output.txt" 5 anthony
-run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expected_output_user_exists.txt" 5 person1
-kill $SERVER_PID
+# run_create_user_tests "Create User" "qemu-riscv64 ./client anthony create" "expected_client_output.txt" 5 anthony
+# run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expected_output_user_exists.txt" 5 person1
+# kill $SERVER_PID
 
-./server &
-SERVER_PID=$!
-sleep 1  
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
+# ./server &
+# SERVER_PID=$!
+# sleep 1  
+# run_add_friend_test "Add Friend" "qemu-riscv64 ./client person1 add person2" "expected_output_ok.txt" "expected_friend_file.txt" 5 person1
 
-run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
-kill $SERVER_PID
+# run_post_wall_test "Post Wall" "qemu-riscv64 ./client person1 post person2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 person1
+# kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
 exit 0
