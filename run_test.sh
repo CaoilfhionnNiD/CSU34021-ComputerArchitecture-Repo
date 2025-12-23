@@ -12,10 +12,6 @@ run_create_user_tests() {
     FOLDER=${5:-""}
     TIMEOUT=5
 
-    # rm -f server.pipe anthony.pipe
-
-    # mkfifo server.pipe anthony.pipe
-
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
@@ -23,15 +19,6 @@ run_create_user_tests() {
         SERVER_PID=$!
         sleep 1
     fi
-    # Run client 
-    # if ! eval "$CLIENT_CMD" >client.out 2>&1; then
-    #     echo "Client crashed"
-    #     kill $SERVER_PID
-    #     return 0
-    # fi
-
-    # rm -f server.pipe
-    # mkfifo server.pipe
 
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
         STATUS=$?
@@ -44,7 +31,6 @@ run_create_user_tests() {
         return 0
     fi
 
-    # Compare output
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
@@ -94,14 +80,14 @@ run_client_without_server_test() {
         echo "Test passed! Output as expected to server pipe +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
-        echo "Test failed! Output mismatch"
+        echo "Test failed! Output not as expected to server pipe"
     fi
 
     if diff -u "$EXPECTED_OUTPUT_2" client.out; then
         echo "Test passed! Output as expected from client pipe +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
-        echo "Test failed! Output mismatch"
+        echo "Test failed! Output not as expected from client"
     fi
 }
 
@@ -129,7 +115,7 @@ run_server_without_client_test() {
         echo "Test passed! Output as expected +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
-        echo "Test failed! Output mismatch"
+        echo "Test failed! Output from server to client pipe did not match"
     fi
 }
 
@@ -267,7 +253,7 @@ run_server_without_client_test "Create User without client" "expected_client_out
 # SERVER_PID=$!
 # sleep 1  
 
-# run_create_user_tests "Create User" "qemu-riscv64 ./client anthony create" "expected_client_output.txt" 5 anthony
+run_create_user_tests "Create User" "qemu-riscv64 ./client anthony create" "expected_client_output.txt" 5 anthony
 # run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expected_output_user_exists.txt" 5 person1
 # kill $SERVER_PID
 
