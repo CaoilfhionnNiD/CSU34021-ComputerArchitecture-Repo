@@ -81,9 +81,6 @@ run_client_without_server_test() {
     cat server.pipe > server_pipe.out &
     PIPE_PID=$!
 
-    cat anthony.pipe > anthony_pipe.out &
-    ANTHONY_PIPE_PID=$!
-
     bash -c "$CLIENT_CMD" > client.out 2>&1 &
     CLIENT_PID=$!
 
@@ -93,18 +90,6 @@ run_client_without_server_test() {
 
     sleep 1
 
-    # if kill -0 "$CLIENT_PID" 2>/dev/null; then
-    #     kill "$CLIENT_PID" 2>/dev/null || true
-    #     wait "$CLIENT_PID" 2>/dev/null || true
-    # else
-    #     echo "Client exited before 2 seconds"
-    # fi
-
-    # kill "$PIPE_PID" 2>/dev/null || true
-    # wait "$PIPE_PID" 2>/dev/null || true
-    # kill "$ANTHONY_PIPE_PID" 2>/dev/null || true
-    # wait "$ANTHONY_PIPE_PID" 2>/dev/null || true
-
     if diff -u "$EXPECTED_OUTPUT" server_pipe.out; then
         echo "Test passed! Output as expected to server pipe +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
@@ -112,7 +97,7 @@ run_client_without_server_test() {
         echo "Test failed! Output mismatch"
     fi
 
-    if diff -u "$EXPECTED_OUTPUT_2" anthony_pipe.out; then
+    if diff -u "$EXPECTED_OUTPUT_2" client.out; then
         echo "Test passed! Output as expected from client pipe +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
