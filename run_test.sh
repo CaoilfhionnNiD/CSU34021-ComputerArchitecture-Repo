@@ -113,27 +113,17 @@ run_server_without_client_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    # rm -f server.pipe anthony.pipe server_pipe.out anthony_pipe.out
-
-    # mkfifo server.pipe
-    # mkfifo bilanthonyly.pipe
-
     cat anthony.pipe > anthony_pipe.out &
-    ANTHONY_READER_PID=$!
 
-    ./server &
-    SERVER_PID=$!
-    sleep 1
+    if ! pgrep -x "server" > /dev/null; then
+        ./server &
+        SERVER_PID=$!
+        sleep 1
+    fi
 
-    echo "anthony create" > server.pipe 
+    echo "create anthony" > server.pipe 
 
     sleep 2
-
-    kill "$ANTHONY_READER_PID" 2>/dev/null || true
-    wait "$ANTHONY_READER_PID" 2>/dev/null || true
-
-    kill "$SERVER_PID" 2>/dev/null || true
-    wait "$SERVER_PID" 2>/dev/null || true
 
     if diff -u "$EXPECTED_OUTPUT" anthony_pipe.out; then
         echo "Test passed! Output as expected +$POINTS points"
@@ -141,8 +131,6 @@ run_server_without_client_test() {
     else
         echo "Test failed! Output mismatch"
     fi
-
-    # rm -f server.pipe anthony.pipe
 }
 
 
