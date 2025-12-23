@@ -43,15 +43,6 @@ jobs:
       - name: Build project
         run: make
 
-      - name: Make .pipe files
-        run: |
-          echo "Creating named pipes..."
-          mkfifo server.pipe
-          mkfifo anthony.pipe
-          mkfifo bob.pipe
-          mkfifo person1.pipe
-          mkfifo person2.pipe
-
       - name: Run autograder
         run: bash run_test.sh
 
