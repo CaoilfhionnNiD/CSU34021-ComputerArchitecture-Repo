@@ -12,8 +12,6 @@ run_create_user_tests() {
     FOLDER=${5:-""}
     TIMEOUT=5
 
-    rm -rf $FOLDER
-
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
     if ! pgrep -x "server" > /dev/null; then
@@ -48,7 +46,7 @@ run_create_user_tests() {
             echo "Test failed! Folder missing or does not contain the exactly two .txt files"
         fi
     else
-        echo "Test failed! Client output mismatch"
+        echo "Test failed! Client folder does not exist"
     fi
 }
 
@@ -248,7 +246,7 @@ mkfifo $name1.pipe
 mkfifo $name2.pipe
 mkfifo server.pipe
 
-echo "create $name1" > expected_server_pipe_output.txt
+echo -n "create $name1" > expected_server_pipe_output.txt
 
 run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 $name1
 run_server_without_client_test "Create User without client" "expected_client_output.txt" 5 $name1
@@ -256,6 +254,8 @@ run_server_without_client_test "Create User without client" "expected_client_out
 # ./server &
 # SERVER_PID=$!
 # sleep 1  
+
+rm -rf $name1
 
 run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_client_output.txt" 5 $name1
 run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_output_user_exists.txt" 5 $name1
