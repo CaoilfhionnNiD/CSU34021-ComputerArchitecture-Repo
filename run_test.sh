@@ -12,7 +12,7 @@ run_create_user_tests() {
     FOLDER=${5:-""}
     TIMEOUT=5
 
-    rm -rf anthony
+    rm -rf $FOLDER
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
@@ -58,6 +58,7 @@ run_client_without_server_test() {
     EXPECTED_OUTPUT=$3
     EXPECTED_OUTPUT_2=$4
     POINTS=$5
+    CLIENT_NAME=$6
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
@@ -74,7 +75,7 @@ run_client_without_server_test() {
 
     sleep 2
 
-    echo "ok: user created!" > anthony.pipe &
+    echo "ok: user created!" > $CLIENT_NAME.pipe &
 
     sleep 1
 
@@ -98,10 +99,11 @@ run_server_without_client_test() {
     TEST_NAME=$1
     EXPECTED_OUTPUT=$2
     POINTS=$3
+    CLIENT_NAME=$4
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    cat anthony.pipe > anthony_pipe.out &
+    cat $CLIENT_NAME.pipe > client_pipe.out &
 
     if ! pgrep -x "server" > /dev/null; then
         ./server &
@@ -109,11 +111,11 @@ run_server_without_client_test() {
         sleep 1
     fi
 
-    echo "create anthony" > server.pipe 
+    echo "create $CLIENT_NAME" > server.pipe 
 
     sleep 2
 
-    if diff -u "$EXPECTED_OUTPUT" anthony_pipe.out; then
+    if diff -u "$EXPECTED_OUTPUT" client_pipe.out; then
         echo "Test passed! Output as expected +$POINTS points"
         TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
     else
@@ -182,11 +184,12 @@ run_add_friend_test() {
     EXPECTED_FILE=$4
     POINTS=$5
     FOLDER=${6:-""}
+    FOLDER2=${7:-""}
     TIMEOUT=10
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    echo "person1" > person2/friends.txt
+    echo "$FOLDER" > $FOLDER2/friends.txt
 
 
     if ! pgrep -x "server" > /dev/null; then
@@ -243,11 +246,12 @@ done
 echo "Creating named pipes..."
 mkfifo $name1.pipe
 mkfifo $name2.pipe
+mkfifo server.pipe
 
 echo "create $name1" > expected_server_pipe_output.txt
 
-run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 
-run_server_without_client_test "Create User without client" "expected_client_output.txt" 5
+run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 $name1
+run_server_without_client_test "Create User without client" "expected_client_output.txt" 5 $name1
 
 # ./server &
 # SERVER_PID=$!
@@ -265,7 +269,7 @@ echo "$name2" > expected_friend_file.txt
 # ./server &
 # SERVER_PID=$!
 # sleep 1  
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output_ok.txt" "expected_friend_file.txt" 5 $name1
+run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output_ok.txt" "expected_friend_file.txt" 5 $name1 $name2
 
 echo "$name1: hey" > expected_wall_file.txt
 
