@@ -254,7 +254,7 @@ run_server_without_client_test "Create User without client" "expected_client_out
 # sleep 1  
 
 run_create_user_tests "Create User" "qemu-riscv64 ./client anthony create" "expected_client_output.txt" 5 anthony
-# run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expected_output_user_exists.txt" 5 person1
+run_create_user_tests "Create User" "qemu-riscv64 ./client person1 create" "expected_output_user_exists.txt" 5 person1
 # kill $SERVER_PID
 
 # ./server &
