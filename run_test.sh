@@ -189,15 +189,10 @@ run_add_friend_test() {
 
     echo "$FOLDER" > $FOLDER2/friends.txt
 
-
     if ! pgrep -x "server" > /dev/null; then
-        echo "Server not running. Starting server..."
-         ./server > server.out 2>&1 &
+        ./server &
         SERVER_PID=$!
-        sleep 1  
-    else
-        SERVER_PID=$(pgrep -x "server")
-        echo "Server already running with PID $SERVER_PID"
+        sleep 1
     fi
 
     if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
@@ -251,30 +246,21 @@ echo -n "create $name1" > expected_server_pipe_output.txt
 run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_server_pipe_output.txt" "expected_client_output.txt" 5 $name1
 run_server_without_client_test "Create User without client" "expected_client_output.txt" 5 $name1
 
-# ./server &
-# SERVER_PID=$!
-# sleep 1  
-
 rm -rf $name1
 
 run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_client_output.txt" 5 $name1
 run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_output_user_exists.txt" 5 $name1
-# kill $SERVER_PID
 
 mkdir "$name2"
 touch "$name2/friends.txt" "$name2/wall.txt"
 
 echo "$name2" > expected_friend_file.txt
 
-# ./server &
-# SERVER_PID=$!
-# sleep 1  
 run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output_ok.txt" "expected_friend_file.txt" 5 $name1 $name2
 
 echo "$name1: hey" > expected_wall_file.txt
 
 run_post_wall_test "Post Wall" "qemu-riscv64 ./client $name1 post $name2 hey" "expected_output_ok.txt" "expected_wall_file.txt" 5 $name2
-# kill $SERVER_PID
 
 echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
 exit 0
