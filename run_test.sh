@@ -167,6 +167,23 @@ run_post_wall_test() {
 
 }
 
+run_display_wall_test() {
+    TEST_NAME=$1
+    CLIENT_CMD=$2 
+    EXPECTED_OUTPUT=$3
+    EXPECTED_FILE=$4
+    POINTS=$5
+    TIMEOUT=5
+
+    echo "Running test: $TEST_NAME (worth $POINTS points)"
+
+    start_server_if_needed
+
+    run_with_timeout "$CLIENT_CMD" || return
+
+    compare_output "$EXPECTED_OUTPUT" $((POINTS)) "Output as expected" "Output not as expected from client"
+}
+
 run_add_friend_test() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
@@ -236,6 +253,14 @@ if [[ $STATUS1 -eq 0 && $STATUS2 -eq 0 ]]; then
     echo "$name1: hey" > expected_output/expected_output.txt
 
     run_post_wall_test "Post Wall" "qemu-riscv64 ./client $name1 post $name2 hey" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name2
+
+    echo "$name1: hey" > expected_output/expected_output.txt
+
+    printf "%s\n%s\n%s\n%s\n" "start_of_file" "$name2: how are you" "$name1: great" "end_of_file"> expected_output/expected_output.txt
+
+    printf "%s\n%s\n "$name2: how are you" "$name1: great" > $name1/wall.txt
+
+    run_display_wall_test "Display Wall" "qemu-riscv64 ./client $name1 display" "expected_output/expected_output.txt" 5
 else
     echo "First two tests failed so remaining tests are not executed"
 fi
