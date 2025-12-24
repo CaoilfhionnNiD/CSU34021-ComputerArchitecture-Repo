@@ -4,6 +4,31 @@ set -e
 TOTAL_POINTS=0
 MAX_POINTS=50
 
+start_server_if_needed() {
+    if ! pgrep -x "server" > /dev/null; then
+        ./server &
+        SERVER_PID=$!
+        sleep 1
+    fi
+}
+
+run_with_timeout() {
+    CLIENT_CMD=$1
+    TIMEOUT=5
+
+    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
+        STATUS=$?
+        if [[ $STATUS -eq 124 ]]; then
+            echo "Test failed: timed out after ${TIMEOUT}s"
+        else
+            echo "Test failed: client crashed"
+        fi
+        kill $SERVER_PID
+        return 1
+    fi
+    return 0
+}
+
 run_create_user_tests() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
@@ -14,22 +39,9 @@ run_create_user_tests() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    if ! pgrep -x "server" > /dev/null; then
-        ./server &
-        SERVER_PID=$!
-        sleep 1
-    fi
+    start_server_if_needed
 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-        STATUS=$?
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
-        kill $SERVER_PID
-        return 0
-    fi
+    run_with_timeout "$CLIENT_CMD" || return
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
@@ -101,11 +113,7 @@ run_server_without_client_test() {
 
     cat $CLIENT_NAME.pipe > client_pipe.out &
 
-    if ! pgrep -x "server" > /dev/null; then
-        ./server &
-        SERVER_PID=$!
-        sleep 1
-    fi
+    start_server_if_needed
 
     echo "create $CLIENT_NAME" > server.pipe 
 
@@ -130,22 +138,9 @@ run_post_wall_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    if ! pgrep -x "server" > /dev/null; then
-        ./server &
-        SERVER_PID=$!
-        sleep 1
-    fi
+    start_server_if_needed
 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-        STATUS=$?
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
-        kill $SERVER_PID
-        return 0
-    fi
+    run_with_timeout "$CLIENT_CMD" || return
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
@@ -185,22 +180,9 @@ run_add_friend_test() {
 
     echo "$FOLDER" > $FOLDER2/friends.txt
 
-    if ! pgrep -x "server" > /dev/null; then
-        ./server &
-        SERVER_PID=$!
-        sleep 1
-    fi
+    start_server_if_needed
 
-    if ! timeout "${TIMEOUT}s" bash -c "$CLIENT_CMD" > client.out 2>&1; then
-        STATUS=$?
-        if [[ $STATUS -eq 124 ]]; then
-            echo "Test failed: timed out after ${TIMEOUT}s"
-        else
-            echo "Test failed: client crashed"
-        fi
-        kill $SERVER_PID
-        return 0
-    fi
+    run_with_timeout "$CLIENT_CMD" || return
     
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         echo "Test passed! Output as expected +$((POINTS - 3)) points"
