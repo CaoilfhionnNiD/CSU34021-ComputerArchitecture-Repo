@@ -258,7 +258,7 @@ if [[ $STATUS1 -eq 0 && $STATUS2 -eq 0 ]]; then
 
     printf "%s\n%s\n%s\n%s\n" "start_of_file" "$name2: how are you" "$name1: great" "end_of_file"> expected_output/expected_output.txt
 
-    printf "%s\n%s\n "$name2: how are you" "$name1: great" > $name1/wall.txt
+    printf "%s\n%s\n" "$name2: how are you" "$name1: great" > $name1/wall.txt
 
     run_display_wall_test "Display Wall" "qemu-riscv64 ./client $name1 display" "expected_output/expected_output.txt" 5
 else
