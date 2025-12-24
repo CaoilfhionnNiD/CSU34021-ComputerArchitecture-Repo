@@ -196,7 +196,7 @@ run_add_friend_test() {
 
     echo "Running test: $TEST_NAME (worth $POINTS points)"
 
-    echo "$FOLDER" > $FOLDER2/friends.txt
+    # echo "$FOLDER" > $FOLDER2/friends.txt
 
     start_server_if_needed
 
@@ -249,8 +249,10 @@ if [[ $STATUS1 -eq 0 && $STATUS2 -eq 0 ]]; then
     echo "$name2" > expected_output/expected_output.txt
 
     run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name1 $name2
-    mkfifo person1.pipe person2.pipe 
-    run_add_friend_test "Add Friend when don't exist" "qemu-riscv64 ./client person1 add person2" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name1 $name2
+
+    echo "nok: user person2 does not exist" > expected_output/expected_output.txt
+
+    run_add_friend_test "Add Friend when they don't exist" "qemu-riscv64 ./client $name1 add person2" "expected_output/expected_output.txt" "expected_output/expected_output_2.txt" 5 $name1 $name2
 
     echo "$name1: hey" > expected_output/expected_output.txt
 
