@@ -95,7 +95,7 @@ run_client_without_server_test() {
 run_server_without_client_test() {
     TEST_NAME=$1
     EXPECTED_OUTPUT=$2
-    CLIENT_NAME=$4
+    CLIENT_NAME=$3
 
     echo "Running test: $TEST_NAME (worth 10 points)"
 
