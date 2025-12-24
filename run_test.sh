@@ -29,6 +29,22 @@ run_with_timeout() {
     return 0
 }
 
+
+compare_output() {
+    EXPECTED_OUTPUT=$1
+    POINTS=$2
+    MESSAGE_PASS=$3
+    MESSAGE_FAIL=$4
+    if diff -u "$EXPECTED_OUTPUT" client.out; then
+        echo "Test passed! $MESSAGE +$POINTS points"
+        TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
+        return 0
+    else
+        echo "Test failed: $MESSAGE_FAIL"
+        return 1
+    fi
+}
+
 run_create_user_tests() {
     TEST_NAME=$1
     CLIENT_CMD=$2 
@@ -43,12 +59,14 @@ run_create_user_tests() {
 
     run_with_timeout "$CLIENT_CMD" || return
 
-    if diff -u "$EXPECTED_OUTPUT" client.out; then
-        echo "Test passed! Output as expected +$((POINTS - 3)) points"
-        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-    else
-        echo "Test failed: Output not as expected"
-    fi
+    compare_output "$EXPECTED_OUTPUT" $((POINTS-3)) "Output as expected" "Output not as expected"
+
+    # if diff -u "$EXPECTED_OUTPUT" client.out; then
+    #     echo "Test passed! Output as expected +$((POINTS - 3)) points"
+    #     TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
+    # else
+    #     echo "Test failed: Output not as expected"
+    # fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -d "$FOLDER" ]] && [[ -f "$FOLDER/friends.txt" ]] && [[ -f "$FOLDER/wall.txt" ]]; then
@@ -95,12 +113,15 @@ run_client_without_server_test() {
         echo "Test failed: Output not as expected to server pipe"
     fi
 
-    if diff -u "$EXPECTED_OUTPUT_2" client.out; then
-        echo "Test passed! Output as expected from client pipe +10 points"
-        TOTAL_POINTS=$((TOTAL_POINTS + 10))
-    else
-        echo "Test failed: Output not as expected from client"
-    fi
+    compare_output "$EXPECTED_OUTPUT_2" $((10)) "Output as expected from client pipe" "Output not as expected from client"
+
+
+    # if diff -u "$EXPECTED_OUTPUT_2" client.out; then
+    #     echo "Test passed! Output as expected from client pipe +10 points"
+    #     TOTAL_POINTS=$((TOTAL_POINTS + 10))
+    # else
+    #     echo "Test failed: Output not as expected from client"
+    # fi
 }
 
 
@@ -142,12 +163,14 @@ run_post_wall_test() {
 
     run_with_timeout "$CLIENT_CMD" || return
 
-    if diff -u "$EXPECTED_OUTPUT" client.out; then
-        echo "Test passed! Output as expected +$((POINTS - 3)) points"
-        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-    else
-        echo "Test failed: Output not as expected from client"
-    fi
+    compare_output "$EXPECTED_OUTPUT" $((POINTS - 3)) "Output as expected" "Output not as expected from client"
+
+    # if diff -u "$EXPECTED_OUTPUT" client.out; then
+    #     echo "Test passed! Output as expected +$((POINTS - 3)) points"
+    #     TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
+    # else
+    #     echo "Test failed: Output not as expected from client"
+    # fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
@@ -183,13 +206,16 @@ run_add_friend_test() {
     start_server_if_needed
 
     run_with_timeout "$CLIENT_CMD" || return
+
+    compare_output "$EXPECTED_OUTPUT" $((POINTS - 3)) "Output as expected" "Output not as expected from client"
+
     
-    if diff -u "$EXPECTED_OUTPUT" client.out; then
-        echo "Test passed! Output as expected +$((POINTS - 3)) points"
-        TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-    else
-        echo "Test failed: Output not as expected from client"
-    fi
+    # if diff -u "$EXPECTED_OUTPUT" client.out; then
+    #     echo "Test passed! Output as expected +$((POINTS - 3)) points"
+    #     TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
+    # else
+    #     echo "Test failed: Output not as expected from client"
+    # fi
 
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
@@ -215,9 +241,7 @@ while [[ "$name1" == "$name2" ]]; do
 done
 
 echo "Creating named pipes..."
-mkfifo $name1.pipe
-mkfifo $name2.pipe
-mkfifo server.pipe
+mkfifo $name1.pipe $name2.pipe server.pipe
 
 echo -n "create $name1" > expected_output/expected_output.txt
 
