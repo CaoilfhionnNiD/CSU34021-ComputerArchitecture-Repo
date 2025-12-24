@@ -32,12 +32,12 @@ run_with_timeout() {
 
 compare_output() {
     EXPECTED_OUTPUT=$1
-    POINTS=$2
+    local points=$2
     MESSAGE_PASS=$3
     MESSAGE_FAIL=$4
     if diff -u "$EXPECTED_OUTPUT" client.out; then
-        echo "Test passed! $MESSAGE +$POINTS points"
-        TOTAL_POINTS=$((TOTAL_POINTS + POINTS))
+        echo "Test passed! $MESSAGE_PASS +$points points"
+        TOTAL_POINTS=$((TOTAL_POINTS + points))
         return 0
     else
         echo "Test failed: $MESSAGE_FAIL"
@@ -113,7 +113,7 @@ run_client_without_server_test() {
         echo "Test failed: Output not as expected to server pipe"
     fi
 
-    compare_output "$EXPECTED_OUTPUT_2" $((10)) "Output as expected from client pipe" "Output not as expected from client"
+    compare_output "$EXPECTED_OUTPUT_2" 10 "Output as expected from client pipe" "Output not as expected from client"
 
 
     # if diff -u "$EXPECTED_OUTPUT_2" client.out; then
