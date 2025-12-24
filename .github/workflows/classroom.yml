@@ -11,11 +11,9 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Install common packages
       - name: Install dependencies
         run: |
           sudo apt update
@@ -29,7 +27,6 @@ jobs:
           sudo apt install -y gcc-riscv64-unknown-elf gcc-riscv64-linux-gnu qemu-user
           pip install tomli
 
-      # Step 3: Verify installations
       - name: Verify toolchain
         run: |
           gcc --version
@@ -39,21 +36,8 @@ jobs:
           riscv64-unknown-elf-gcc --version || true
           riscv64-linux-gnu-gcc --version || true
 
-      # Step 4: Build project
       - name: Build project
         run: make
 
       - name: Run autograder
         run: bash run_test.sh
-
-      # echo "Starting server..."
-      # ./server &
-      # SERVER_PID=$!
-
-      # sleep 1 
-
-      # echo "Running client via QEMU..."
-      # qemu-riscv64 ./client 
-
-      # echo "Waiting for server to finish..."
-      # wait $SERVER_PID
