@@ -61,13 +61,6 @@ run_create_user_tests() {
 
     compare_output "$EXPECTED_OUTPUT" $((POINTS-3)) "Output as expected" "Output not as expected"
 
-    # if diff -u "$EXPECTED_OUTPUT" client.out; then
-    #     echo "Test passed! Output as expected +$((POINTS - 3)) points"
-    #     TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-    # else
-    #     echo "Test failed: Output not as expected"
-    # fi
-
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -d "$FOLDER" ]] && [[ -f "$FOLDER/friends.txt" ]] && [[ -f "$FOLDER/wall.txt" ]]; then
             echo "Test passed! .txt files exist +$((POINTS - 2)) points"
@@ -114,14 +107,6 @@ run_client_without_server_test() {
     fi
 
     compare_output "$EXPECTED_OUTPUT_2" 10 "Output as expected from client pipe" "Output not as expected from client"
-
-
-    # if diff -u "$EXPECTED_OUTPUT_2" client.out; then
-    #     echo "Test passed! Output as expected from client pipe +10 points"
-    #     TOTAL_POINTS=$((TOTAL_POINTS + 10))
-    # else
-    #     echo "Test failed: Output not as expected from client"
-    # fi
 }
 
 
@@ -165,13 +150,6 @@ run_post_wall_test() {
 
     compare_output "$EXPECTED_OUTPUT" $((POINTS - 3)) "Output as expected" "Output not as expected from client"
 
-    # if diff -u "$EXPECTED_OUTPUT" client.out; then
-    #     echo "Test passed! Output as expected +$((POINTS - 3)) points"
-    #     TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-    # else
-    #     echo "Test failed: Output not as expected from client"
-    # fi
-
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
             if diff -u "$EXPECTED_FILE" $FOLDER/wall.txt; then
@@ -209,14 +187,6 @@ run_add_friend_test() {
 
     compare_output "$EXPECTED_OUTPUT" $((POINTS - 3)) "Output as expected" "Output not as expected from client"
 
-    
-    # if diff -u "$EXPECTED_OUTPUT" client.out; then
-    #     echo "Test passed! Output as expected +$((POINTS - 3)) points"
-    #     TOTAL_POINTS=$((TOTAL_POINTS + POINTS - 3))
-    # else
-    #     echo "Test failed: Output not as expected from client"
-    # fi
-
     if diff -u "$EXPECTED_OUTPUT" client.out; then
         if [[ -n "$FOLDER" && -d "$FOLDER" ]]; then
             if diff -u "$EXPECTED_FILE" $FOLDER/friends.txt; then
@@ -246,23 +216,28 @@ mkfifo $name1.pipe $name2.pipe server.pipe
 echo -n "create $name1" > expected_output/expected_output.txt
 
 run_client_without_server_test "Create User without server" "qemu-riscv64 ./client $name1 create " "expected_output/expected_output.txt" "expected_output/expected_client_output.txt" $name1
+STATUS1=$?
 run_server_without_client_test "Create User without client" "expected_output/expected_client_output.txt" $name1
+STATUS2=$?
 
-rm -rf $name1
+if [[ $STATUS1 -eq 0 && $STATUS2 -eq 0 ]]; then
+    rm -rf $name1
 
-run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_output/expected_client_output.txt" 5 $name1
-run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_output/expected_output_user_exists.txt" 5 $name1
+    run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_output/expected_client_output.txt" 5 $name1
+    run_create_user_tests "Create User" "qemu-riscv64 ./client $name1 create" "expected_output/expected_output_user_exists.txt" 5 $name1
 
-mkdir "$name2"
-touch "$name2/friends.txt" "$name2/wall.txt"
+    mkdir "$name2"
+    touch "$name2/friends.txt" "$name2/wall.txt"
 
-echo "$name2" > expected_output/expected_output.txt
+    echo "$name2" > expected_output/expected_output.txt
 
-run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name1 $name2
+    run_add_friend_test "Add Friend" "qemu-riscv64 ./client $name1 add $name2" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name1 $name2
 
-echo "$name1: hey" > expected_output/expected_output.txt
+    echo "$name1: hey" > expected_output/expected_output.txt
 
-run_post_wall_test "Post Wall" "qemu-riscv64 ./client $name1 post $name2 hey" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name2
-
-echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
+    run_post_wall_test "Post Wall" "qemu-riscv64 ./client $name1 post $name2 hey" "expected_output/expected_output_ok.txt" "expected_output/expected_output.txt" 5 $name2
+else
+    echo "First two tests failed so remaining tests are not executed"
+fi
+    echo "Total score: $TOTAL_POINTS/$MAX_POINTS"
 exit 0
